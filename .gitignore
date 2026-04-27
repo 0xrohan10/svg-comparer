@@ -12,6 +12,10 @@ node_modules
 .DS_Store
 Thumbs.db
 
+# Local tools
+.opencode
+.vscode
+
 # Env
 .env
 .env.*

@@ -1,42 +1,88 @@
-# sv
+# SVG Comparer
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A local-first SvelteKit app for comparing two SVG files and scoring how similar they are.
 
-## Creating a project
+The app is designed for ephemeral comparison: SVGs are read in the browser tab, previewed with object URLs, and never uploaded to an application server.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Features
 
-```sh
-# create a new project
-npx sv create my-app
+- Compare two `.svg` files side by side.
+- Drag, drop, or click each preview pane to add or replace an SVG.
+- See a primary combined similarity score.
+- Inspect the score breakdown for structure and visual similarity.
+- Reset the comparison without refreshing the page.
+- Reject invalid SVGs and SVGs with external references.
+
+## Scoring
+
+The final score is a fixed blend:
+
+- `50%` coordinate / structure similarity.
+- `50%` visual raster similarity.
+
+The coordinate / structure score is itself a pragmatic blend of:
+
+- normalized shape-mask similarity, based on alpha/paint occupancy after rendering both SVGs into the same normalized canvas
+- normalized SVG token similarity, based on visible geometry and styling tokens
+
+The visual score rasterizes both SVGs to the same canvas size and compares pixel differences.
+
+This is intentionally an MVP similarity heuristic, not a full SVG semantic equivalence engine. It should handle common icon comparisons well, including cases where one SVG uses a white overlay and another uses transparent negative space.
+
+## Project Structure
+
+```text
+src/routes/+page.svelte             # UI, upload state, previews, score display
+src/lib/svg-comparison/index.ts     # validation, parsing, rasterization, scoring
+src/routes/health/+server.ts        # lightweight health endpoint for local runtime checks
 ```
 
-To recreate this project with the same configuration:
+Core comparison code lives in `src/lib/svg-comparison` so it can be tested or reused independently of the Svelte page.
+
+## Development
+
+Install dependencies:
 
 ```sh
-# recreate this project
-bun x sv@0.15.1 create --template minimal --types ts --add eslint prettier mcp="ide:opencode" --install bun ./svg-comparer
+bun install
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Start the development server:
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun run dev
 ```
 
-## Building
+## Build And Run Locally
 
-To create a production version of your app:
+Create a production build:
 
 ```sh
-npm run build
+bun run build
 ```
 
-You can preview the production build with `npm run preview`.
+Run the built Node server locally:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+HOST=:: PORT=8080 bun run start
+```
+
+## Quality Checks
+
+Run Svelte and TypeScript checks:
+
+```sh
+bun run check
+```
+
+Run formatting and lint checks:
+
+```sh
+bun run lint
+```
+
+Format the project:
+
+```sh
+bun run format
+```
